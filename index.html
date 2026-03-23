@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konopelchenko-Dubrovsky Denklem Gezgini</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@700&family=Source+Serif+4:wght@300;400;600&display=swap');
+
+  :root {
+    --bg: #0e0f14;
+    --bg2: #14161e;
+    --bg3: #1c1f2b;
+    --card: #1e2130;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #e8e6e0;
+    --muted: #8a8880;
+    --accent: #c9a96e;
+    --accent2: #7ecfb3;
+    --accent3: #b08de8;
+    --red: #e06b6b;
+    --blue: #6ba8e0;
+    --mono: 'IBM Plex Mono', monospace;
+    --serif: 'Source Serif 4', serif;
+    --display: 'Playfair Display', serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--serif);
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 3rem 2rem;
+    display: flex;
+    align-items: flex-end;
+    gap: 2rem;
+    background: linear-gradient(180deg, #0a0b10 0%, var(--bg) 100%);
+  }
+  .header-badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    border: 1px solid var(--accent);
+    padding: 3px 10px;
+    border-radius: 2px;
+    white-space: nowrap;
+    margin-bottom: 6px;
+  }
+  header h1 {
+    font-family: var(--display);
+    font-size: 2rem;
+    line-height: 1.2;
+    color: #fff;
+    font-weight: 700;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  /* ─── NAV TABS ─── */
+  nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0 3rem;
+    background: var(--bg);
+    overflow-x: auto;
+  }
+  nav button {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: none;
+    padding: 14px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+    transition: color .2s, border-color .2s;
+  }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ─── LAYOUT ─── */
+  main { max-width: 1200px; margin: 0 auto; padding: 2.5rem 3rem; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* ─── GRID ─── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; }
+  @media (max-width: 900px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.5rem;
+  }
+  .card-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  /* ─── EQUATION BOX ─── */
+  .eq-box {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 1.2rem 1.5rem;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent2);
+    line-height: 2;
+    overflow-x: auto;
+    margin: 1rem 0;
+  }
+  .eq-box .eq-label {
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .eq-comment { color: var(--muted); }
+  .eq-op { color: var(--accent); }
+  .eq-num { color: var(--red); }
+  .eq-var { color: #7ec8e8; }
+  .eq-sub { color: var(--accent3); }
+
+  /* ─── PARAM SLIDERS ─── */
+  .param-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .param-row label {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    min-width: 40px;
+  }
+  .param-row input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--border2);
+    border-radius: 2px;
+    outline: none;
+  }
+  .param-row input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+  }
+  .param-row .val {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    min-width: 42px;
+    text-align: right;
+  }
+
+  /* ─── CANVAS WRAPPER ─── */
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    margin-top: 1rem;
+  }
+  .chart-wrap canvas { width: 100% !important; }
+
+  /* ─── METHOD STEPS ─── */
+  .step-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border2);
+    background: none;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-dot.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .step-dot:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+  .step-panel { display: none; }
+  .step-panel.active { display: block; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .step-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    padding: 2px 10px;
+    border-radius: 2px;
+    margin-bottom: 10px;
+  }
+  .step-panel h3 { font-family: var(--display); font-size: 1.25rem; margin-bottom: .75rem; color: #fff; }
+  .step-panel p { color: var(--muted); font-size: 14px; line-height: 1.8; }
+
+  /* ─── SOLUTION CARDS ─── */
+  .sol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem; }
+  .sol-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.2rem;
+    cursor: pointer;
+    transition: border-color .2s, transform .15s;
+  }
+  .sol-card:hover { border-color: var(--accent2); transform: translateY(-2px); }
+  .sol-card.selected { border-color: var(--accent); background: rgba(201,169,110,.07); }
+  .sol-card .sol-id {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .sol-card .sol-name { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #fff; }
+  .sol-card .sol-type {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent2);
+    border: 1px solid var(--accent2);
+    padding: 1px 8px;
+    border-radius: 2px;
+    margin-bottom: 8px;
+  }
+  .sol-card .sol-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+  /* ─── TOGGLE ─── */
+  .toggle-group {
+    display: flex;
+    gap: 4px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 3px;
+    margin-bottom: 1rem;
+    width: fit-content;
+  }
+  .toggle-btn {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all .18s;
+  }
+  .toggle-btn.active { background: var(--accent); color: var(--bg); }
+
+  /* ─── INFO PILLS ─── */
+  .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+  .pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .5px;
+    padding: 4px 12px;
+    border-radius: 2px;
+    border: 1px solid;
+  }
+  .pill.blue { color: var(--blue); border-color: var(--blue); }
+  .pill.gold { color: var(--accent); border-color: var(--accent); }
+  .pill.green { color: var(--accent2); border-color: var(--accent2); }
+  .pill.purple { color: var(--accent3); border-color: var(--accent3); }
+
+  /* ─── REF LIST ─── */
+  .ref-list { list-style: none; }
+  .ref-list li {
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    gap: 12px;
+    line-height: 1.6;
+  }
+  .ref-list li .rn {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    min-width: 28px;
+    padding-top: 2px;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+
+  h2 { font-family: var(--display); font-size: 1.4rem; color: #fff; margin-bottom: .5rem; }
+  h3 { font-size: 1rem; font-weight: 600; color: var(--text); margin-bottom: .5rem; }
+  p { margin-bottom: 1rem; color: var(--muted); }
+
+  .text-accent { color: var(--accent); }
+  .text-accent2 { color: var(--accent2); }
+  .text-white { color: #fff; }
+  .mono { font-family: var(--mono); }
+
+  .tag-row { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: 1px solid var(--border2);
+    padding: 3px 10px;
+    border-radius: 2px;
+  }
+
+  .case-select {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 3px;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(201,169,110,.06);
+    border: 1px solid rgba(201,169,110,.15);
+    border-radius: 4px;
+    padding: 12px 14px;
+    margin-bottom: 1rem;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .info-row::before { content: "ℹ"; color: var(--accent); font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div style="flex:1">
+    <div class="header-badge">İnteraktif Araştırma Gezgini</div>
+    <h1>(2+1)-Boyutlu Konopelchenko-Dubrovsky Denklemi</h1>
+    <p>Mahmud, Tanriverdi & Muhamad (2023) — Harran Üniversitesi · IJMCE 1(1), 11–24</p>
+  </div>
+</header>
+
+<nav id="main-nav">
+  <button class="active" onclick="showSection('intro', this)">Giriş</button>
+  <button onclick="showSection('methods', this)">Yöntemler</button>
+  <button onclick="showSection('solutions', this)">Çözümler</button>
+  <button onclick="showSection('visualizer', this)">Görselleştirici</button>
+  <button onclick="showSection('compare', this)">Karşılaştırma</button>
+  <button onclick="showSection('references', this)">Kaynaklar</button>
+  <button onclick="showSection('simulator', this)">Simülatör</button>
+</nav>
+
+<main>
+
+<!-- ═══════════════════════════════════════════════ INTRO ═══ -->
+<section id="intro" class="section active">
+  <div class="tag-row">
+    <span class="tag">AMS: 35C07 · 35Dxx · 45Kxx</span>
+    <span class="tag">Alındı: 21.03.2023</span>
+    <span class="tag">Kabul: 01.05.2023</span>
+  </div>
+
+  <div class="grid2" style="gap:2rem">
+    <div>
+      <h2>Denklem Nedir?</h2>
+      <p>Konopelchenko-Dubrovsky (KD) denklemi, <strong style="color:var(--text)">1984'te</strong> B.G. Konopelchenko ve V.G. Dubrovsky tarafından önerilen (2+1)-boyutlu, yani iki uzaysal boyut (x, y) ve bir zaman boyutu (t) içeren, integro-diferansiyel bir evrim denklemidir.</p>
+      <p>Fiziksel olarak <strong style="color:var(--text)">dağılmış uzun dalga denklemlerini</strong> temsil eder ve ters saçılım dönüşümü yöntemiyle incelenmiştir.</p>
+
+      <div class="eq-box">
+        <span class="eq-label">KD Denklemi — Ana Form</span>
+        <span class="eq-var">u</span><span class="eq-sub">t</span>
+        <span class="eq-op"> = </span>
+        <span class="eq-var">u</span><span class="eq-sub">xxx</span>
+        <span class="eq-op"> + 6</span><span class="eq-var">β</span><span class="eq-op">u</span><span class="eq-var">u</span><span class="eq-sub">x</span>
+        <span class="eq-op"> − (3/2)</span><span class="eq-var">α²u²u</span><span class="eq-sub">x</span>
+        <span class="eq-op"> + 3∂</span><span class="eq-sub">x</span><span class="eq-op">⁻¹</span><span class="eq-var">u</span><span class="eq-sub">yy</span>
+        <span class="eq-op"> − 3</span><span class="eq-var">αu</span><span class="eq-sub">x</span><span class="eq-op">∂</span><span class="eq-sub">x</span><span class="eq-op">⁻¹</span><span class="eq-var">u</span><span class="eq-sub">y</span>
+        <br><span class="eq-comment">// α, β: serbest parametreler &nbsp;·&nbsp; u(x,y,t): yeterince türevlenebilir fonksiyon</span>
+      </div>
+
+      <div class="pill-row">
+        <span class="pill gold">Lineer olmayan PDE</span>
+        <span class="pill blue">İntegro-diferansiyel</span>
+        <span class="pill green">(2+1)-Boyutlu</span>
+        <span class="pill purple">Evrim Denklemi</span>
+      </div>
+    </div>
+
+    <div>
+      <h2>Özel Durumlar</h2>
+      <p>KD denklemi, parametrelerin özel değerleri için birkaç iyi bilinen denkleme indirgenir:</p>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">Durum: u<sub>t</sub> = 0</div>
+        <h3 style="color:var(--accent2)">Gardner Denklemi</h3>
+        <p style="margin-bottom:0;font-size:13px">KdV ve modifiye KdV denklemlerinin bileşim formu. Dalga propagasyonunda temel referans modelidir.</p>
+      </div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-title">Durum: α = 0</div>
+        <h3 style="color:var(--accent2)">Kadomtsev-Petviashvili (KP) Denklemi</h3>
+        <p style="margin-bottom:0;font-size:13px">Plazma fiziği ve su dalgalarında yaygın kullanılan iki-boyutlu nonlineer dalga denklemi.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Durum: β = 0</div>
+        <h3 style="color:var(--accent2)">Modifiye KP Denklemi</h3>
+        <p style="margin-bottom:0;font-size:13px">KP denkleminin modifiye versiyonu; küpik nonlineerlik içerir.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <h2>Eşdeğer Sistem Formu</h2>
+  <p>∂<sub>x</sub>⁻¹ = ∫dx ters integral dönüşümü uygulanarak, KD denklemi eşdeğer bir sisteme dönüştürülür:</p>
+
+  <div class="eq-box">
+    <span class="eq-label">Sistem Formu (Q = ∂ₓ⁻¹u_y ile)</span>
+    <span class="eq-var">u</span><span class="eq-sub">t</span>
+    <span class="eq-op"> − </span><span class="eq-var">u</span><span class="eq-sub">xxx</span>
+    <span class="eq-op"> − 6</span><span class="eq-var">βuu</span><span class="eq-sub">x</span>
+    <span class="eq-op"> + (3/2)</span><span class="eq-var">α²u²u</span><span class="eq-sub">x</span>
+    <span class="eq-op"> − 3Q</span><span class="eq-sub">y</span>
+    <span class="eq-op"> + 3</span><span class="eq-var">αu</span><span class="eq-sub">x</span><span class="eq-op">Q</span>
+    <span class="eq-op"> = 0</span>
+    <br>
+    <span class="eq-op">Q</span><span class="eq-sub">x</span>
+    <span class="eq-op"> = </span><span class="eq-var">u</span><span class="eq-sub">y</span>
+  </div>
+
+  <hr class="divider">
+
+  <h2>Bu Çalışmanın Katkısı</h2>
+  <div class="grid3">
+    <div class="card">
+      <div class="card-title">İlk Uygulama</div>
+      <p style="font-size:13px;margin:0">ERSCM ve METM yöntemleri bu denkleme <strong style="color:var(--accent)">ilk kez</strong> bu çalışmada uygulanmıştır.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Çözüm Zenginliği</div>
+      <p style="font-size:13px;margin:0">Solitonik, salınımlı, hiperbolik ve rasyonel fonksiyon tiplerinde <strong style="color:var(--accent)">özgün tam çözümler</strong> elde edilmiştir.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Doğrulama</div>
+      <p style="font-size:13px;margin:0">Tüm çözümler Mathematica / Maple sembolk hesaplama yazılımlarıyla <strong style="color:var(--accent)">doğrulanmıştır</strong>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ METHODS ═══ -->
+<section id="methods" class="section">
+  <h2 style="margin-bottom:1.5rem">Kullanılan Yöntemler</h2>
+
+  <div class="toggle-group" id="method-toggle">
+    <button class="toggle-btn active" onclick="showMethod('erscm', this)">ERSCM</button>
+    <button class="toggle-btn" onclick="showMethod('metm', this)">METM</button>
+    <button class="toggle-btn" onclick="showMethod('wave', this)">Dalga Dönüşümü</button>
+  </div>
+
+  <!-- ERSCM -->
+  <div id="method-erscm" class="method-panel">
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-title">Genişletilmiş Rasyonel Sinh-Cosh Yöntemi</div>
+      <p style="font-size:13px;margin-bottom:.5rem">Bu yöntem, nonlineer PDE'leri tam seyahat eden dalga çözümleri arayarak çözer. Çözüm, hiperbolik fonksiyonların oranı şeklinde varsayılır.</p>
+    </div>
+
+    <div class="step-nav" id="erscm-nav">
+      <button class="step-dot active" onclick="showStep('erscm', 1, this)">1</button>
+      <button class="step-dot" onclick="showStep('erscm', 2, this)">2</button>
+      <button class="step-dot" onclick="showStep('erscm', 3, this)">3</button>
+      <button class="step-dot" onclick="showStep('erscm', 4, this)">4</button>
+    </div>
+
+    <div id="erscm-step-1" class="step-panel active">
+      <span class="step-tag">Adım 1</span>
+      <h3>Nonlineer PDE ve Dalga Dönüşümü</h3>
+      <p>Genel nonlineer PDE formu P(ψ, ψ_x, ψ_t, ...) = 0 alınır. Dalga dönüşümü ile ψ(x,y,t) = U(Q), Q = δ₁x + δ₂y + δ₃t substitüsyonu yapılır. Bu dönüşüm, PDE'yi ODE'ye indirgir.</p>
+      <div class="eq-box">
+        <span class="eq-label">Dalga Dönüşümü</span>
+        <span class="eq-var">ψ</span>(x, y, t) <span class="eq-op">= U(Q)</span><br>
+        Q <span class="eq-op">= δ₁x + δ₂y + δ₃t</span><br>
+        <span class="eq-comment">// δ₁: yatay hız, δ₂: genlik, δ₃: viskozite göstergeleri</span>
+      </div>
+    </div>
+
+    <div id="erscm-step-2" class="step-panel">
+      <span class="step-tag">Adım 2</span>
+      <h3>Çözüm Formu Varsayımı</h3>
+      <p>ODE'nin çözümünün aşağıdaki hiperbolik rasyonel formlardan birine sahip olduğu varsayılır:</p>
+      <div class="eq-box">
+        <span class="eq-label">Form A — Sinh tabanlı</span>
+        ψ(Q) <span class="eq-op">=</span> <span class="eq-var">γ₀ sinh(μQ)</span> <span class="eq-op">/</span> <span class="eq-var">[γ₂ + γ₁ cosh(μQ)]</span><br>
+        <span class="eq-comment">// cosh(μQ) ≠ −γ₂/γ₁ şartıyla</span>
+      </div>
+      <div class="eq-box">
+        <span class="eq-label">Form B — Cosh tabanlı</span>
+        ψ(Q) <span class="eq-op">=</span> <span class="eq-var">γ₀ cosh(μQ)</span> <span class="eq-op">/</span> <span class="eq-var">[γ₂ + γ₁ sinh(μQ)]</span><br>
+        <span class="eq-comment">// sinh(μQ) ≠ −γ₂/γ₁ şartıyla</span>
+      </div>
+    </div>
+
+    <div id="erscm-step-3" class="step-panel">
+      <span class="step-tag">Adım 3</span>
+      <h3>Cebirsel Sistem ve Katsayılar</h3>
+      <p>Varsayılan form ODE'ye yerleştirilir. Aynı kuvvetlerdeki cosh^τ₁(μQ) sinh^τ₂(μQ) terimleri toplanır ve sıfıra eşitlenir. Bu işlem bir cebirsel denklem sistemi üretir:</p>
+      <div class="eq-box">
+        <span class="eq-label">Cebirsel Sistem (τ₁, τ₂ = 0, 1, 2)</span>
+        α²γ₀²δ₁² <span class="eq-op">−</span> 4γ₁²δ₁⁴μ² <span class="eq-op">−</span> 2γ₂²(δ₁⁴μ² <span class="eq-op">−</span> δ₃δ₁ <span class="eq-op">+</span> 3δ₂²) <span class="eq-op">= 0</span><br>
+        2γ₁γ₂(δ₁⁴μ² <span class="eq-op">+</span> 2δ₃δ₁ <span class="eq-op">−</span> 6δ₂²) <span class="eq-op">= 0</span><br>
+        3γ₀γ₂δ₁(αδ₂ <span class="eq-op">−</span> 2βδ₁) <span class="eq-op">= 0</span><br>
+        3γ₀γ₁δ₁(αδ₂ <span class="eq-op">−</span> 2βδ₁) <span class="eq-op">= 0</span>
+      </div>
+    </div>
+
+    <div id="erscm-step-4" class="step-panel">
+      <span class="step-tag">Adım 4</span>
+      <h3>Çözüm Parametrelerinin Belirlenmesi</h3>
+      <p>Cebirsel sistem sembolik yazılımlarla (Mathematica/Maple) çözülür. Elde edilen γ₀, γ₁, γ₂ ve μ değerleri forma geri yerine konularak tam çözümler elde edilir. Bu çalışmada 3 farklı parametre seti bulunmuştur.</p>
+      <div class="eq-box">
+        <span class="eq-label">Durum 1 Parametreleri</span>
+        <span class="eq-var">γ₂ = iγ₁</span>  ,  <span class="eq-var">α = γ₁δ₁μ/γ₀</span><br>
+        <span class="eq-var">δ₂ = 2βγ₀/(γ₁μ)</span>  ,  <span class="eq-var">δ₃ = (24β²γ₀² − γ₁²δ₁⁴μ⁴) / (2γ₁²δ₁μ²)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- METM -->
+  <div id="method-metm" class="method-panel" style="display:none">
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-title">Modifiye Genişletilmiş Tanh Yöntemi (METM)</div>
+      <p style="font-size:13px;margin-bottom:.5rem">Riccati ODE'si φ' = b + φ² çözümlerine dayanan bu yöntem, farklı b değerleri için hiperbolik, trigonometrik ve rasyonel çözümler üretir.</p>
+    </div>
+
+    <div class="step-nav" id="metm-nav">
+      <button class="step-dot active" onclick="showStep('metm', 1, this)">1</button>
+      <button class="step-dot" onclick="showStep('metm', 2, this)">2</button>
+      <button class="step-dot" onclick="showStep('metm', 3, this)">3</button>
+      <button class="step-dot" onclick="showStep('metm', 4, this)">4</button>
+      <button class="step-dot" onclick="showStep('metm', 5, this)">5</button>
+    </div>
+
+    <div id="metm-step-1" class="step-panel active">
+      <span class="step-tag">Adım 1</span>
+      <h3>Denge Prensibi ile m'nin Tespiti</h3>
+      <p>ODE'de (14 nolu denklem) U'' ile U³ arasında denge prensibi uygulanır. Bu çalışmada m = 1 bulunmuştur.</p>
+    </div>
+
+    <div id="metm-step-2" class="step-panel">
+      <span class="step-tag">Adım 2</span>
+      <h3>Çözüm Formu</h3>
+      <p>m = 1 için genel form şöyle yazılır:</p>
+      <div class="eq-box">
+        <span class="eq-label">m=1 için Çözüm Serisi</span>
+        U(Q) <span class="eq-op">= a₀ + a₁φ + b₁/φ</span><br>
+        <span class="eq-comment">// a₀, a₁, b₁: belirlenecek sabitler · a₁≠0 veya b₁≠0</span>
+      </div>
+    </div>
+
+    <div id="metm-step-3" class="step-panel">
+      <span class="step-tag">Adım 3</span>
+      <h3>Riccati ODE ve Çözümleri</h3>
+      <p>φ(Q) fonksiyonu Riccati ODE'sini φ' = b + φ² sağlar. b'nin işaretine göre üç farklı çözüm tipi elde edilir:</p>
+      <div class="eq-box">
+        <span class="eq-label">b &lt; 0 — Hiperbolik çözümler</span>
+        φ <span class="eq-op">= −√(−b) tanh(√(−b) Q)</span>  <span class="eq-op">veya</span>  φ <span class="eq-op">= −√(−b) coth(√(−b) Q)</span>
+      </div>
+      <div class="eq-box">
+        <span class="eq-label">b &gt; 0 — Trigonometrik çözümler</span>
+        φ <span class="eq-op">= √b tan(√b Q)</span>  <span class="eq-op">veya</span>  φ <span class="eq-op">= −√b cot(√b Q)</span>
+      </div>
+      <div class="eq-box">
+        <span class="eq-label">b = 0 — Rasyonel çözüm</span>
+        φ <span class="eq-op">= −1/Q</span>  <span class="eq-comment">// Trivial durum değil, geçerli bir çözüm</span>
+      </div>
+    </div>
+
+    <div id="metm-step-4" class="step-panel">
+      <span class="step-tag">Adım 4</span>
+      <h3>Cebirsel Sistem (METM)</h3>
+      <p>Çözüm formu ve türevleri ODE'ye yerleştirilir, φⁱ kuvvetleri toplanır. Elde edilen 7 denklemli cebirsel sistem sembolik yazılımlarla çözülür. Bu çalışmada 3 ana durum (Case 1, 2, 3) bulunmuştur.</p>
+    </div>
+
+    <div id="metm-step-5" class="step-panel">
+      <span class="step-tag">Adım 5</span>
+      <h3>Tam Çözümlerin Eldesi</h3>
+      <p>Katsayılar Riccati çözümleriyle birleştirilir. Her durum için b'nin işaretine göre alt-durumlar elde edilir: u₁₁, u₁₂, u₁₃, u₂₁, u₂₂, u₂₃, u₃₁, u₃₂.</p>
+    </div>
+  </div>
+
+  <!-- Dalga Dönüşümü -->
+  <div id="method-wave" class="method-panel" style="display:none">
+    <div class="card" style="margin-bottom:1.5rem">
+      <div class="card-title">Dalga Dönüşümü Aşaması</div>
+      <p style="font-size:13px">Her iki yöntemde de kullanılan ortak ilk adım, PDE'yi ODE'ye dönüştürmektir.</p>
+    </div>
+    <p>Dalga dönüşümü uygulandıktan ve bir kez integrasyon alındıktan sonra elde edilen onaylı ODE:</p>
+    <div class="eq-box">
+      <span class="eq-label">İndirgeme Sonucu — Denge Prensibi için Hazır ODE</span>
+      2(δ₃δ₁ <span class="eq-op">−</span> 3δ₂)U'
+      <span class="eq-op">+</span> δ₁(3αδ₂² <span class="eq-op">−</span> 6βδ₁)U²
+      <span class="eq-op">+</span> δ₁²α²U³U'
+      <span class="eq-op">−</span> 2δ₁⁴U''
+      <span class="eq-op">= 0</span>
+    </div>
+    <div class="info-row">
+      Denge prensibi U'' ile U³ arasında uygulanır. METM'de m=1 sonucu elde edilir. Bu denklem her iki yöntemin uygulama noktasıdır.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ SOLUTIONS ═══ -->
+<section id="solutions" class="section">
+  <h2 style="margin-bottom:.5rem">Elde Edilen Tam Çözümler</h2>
+  <p style="margin-bottom:1.5rem">ERSCM ve METM yöntemleri ile elde edilen tüm çözüm aileleri. Detayları görmek için bir çözüm seçin.</p>
+
+  <div class="grid2" style="gap:2rem">
+    <div>
+      <div class="card-title">ERSCM Çözümleri</div>
+      <div class="sol-grid" id="sol-grid-erscm" style="grid-template-columns:1fr">
+        <div class="sol-card selected" onclick="selectSol('erscm1', this)">
+          <div class="sol-id">ERSCM · Durum 1</div>
+          <div class="sol-name">u<sub>S1</sub> — Kompleks Hiperbolik</div>
+          <span class="sol-type">Solitonik / Kompleks</span>
+          <div class="sol-desc">γ₂ = iγ₁ parametresiyle elde edilen, cosh/sinh içeren karmaşık değerli çözüm.</div>
+        </div>
+        <div class="sol-card" onclick="selectSol('erscm2', this)">
+          <div class="sol-id">ERSCM · Durum 2</div>
+          <div class="sol-name">u<sub>S2</sub> — Kompleks Hiperbolik II</div>
+          <span class="sol-type">Solitonik / Kompleks</span>
+          <div class="sol-desc">γ₁ = iγ₂ parametresiyle farklı faz yapısına sahip çözüm.</div>
+        </div>
+        <div class="sol-card" onclick="selectSol('erscm3', this)">
+          <div class="sol-id">ERSCM · Durum 3</div>
+          <div class="sol-name">u<sub>S3</sub> — Hiperbolik Kosinüs</div>
+          <span class="sol-type">Hiperbolik / Reel</span>
+          <div class="sol-desc">γ₂ = 0 ile coth fonksiyonu içeren reel değerli soliton çözümü.</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card-title">METM Çözümleri</div>
+      <div class="sol-grid" style="grid-template-columns:1fr">
+        <div class="sol-card" onclick="selectSol('metm11', this)">
+          <div class="sol-id">METM · Durum 1.1</div>
+          <div class="sol-name">u<sub>11</sub> — Trigonometrik (b&lt;0)</div>
+          <span class="sol-type">Periodik / Kompleks</span>
+          <div class="sol-desc">b&lt;0, tanh çözümü kullanan tan/cot içeren periodik yapı.</div>
+        </div>
+        <div class="sol-card" onclick="selectSol('metm12', this)">
+          <div class="sol-id">METM · Durum 1.2</div>
+          <div class="sol-name">u<sub>12</sub> — Trigonometrik (b&gt;0)</div>
+          <span class="sol-type">Periodik / Kompleks</span>
+          <div class="sol-desc">b&gt;0, tan çözümü kullanan periodik dalga çözümü. 3D/2D grafikleri mevcut.</div>
+        </div>
+        <div class="sol-card" onclick="selectSol('metm13', this)">
+          <div class="sol-id">METM · Durum 1.3</div>
+          <div class="sol-name">u<sub>13</sub> — Rasyonel (b=0)</div>
+          <span class="sol-type">Rasyonel</span>
+          <div class="sol-desc">b=0 durumunda elde edilen saf rasyonel fonksiyon çözümü.</div>
+        </div>
+        <div class="sol-card" onclick="selectSol('metm22', this)">
+          <div class="sol-id">METM · Durum 2.2</div>
+          <div class="sol-name">u<sub>22</sub> — Trigonometrik II</div>
+          <span class="sol-type">Periodik / Kompleks</span>
+          <div class="sol-desc">Farklı katsayı setiyle elde edilen periodik çözüm ailesi.</div>
+        </div>
+        <div class="sol-card" onclick="selectSol('metm32', this)">
+          <div class="sol-id">METM · Durum 3.2</div>
+          <div class="sol-name">u<sub>32</sub> — Cot Tabanlı</div>
+          <span class="sol-type">Periodik / Reel</span>
+          <div class="sol-desc">a₁=0 ile cot fonksiyonu içeren çözüm. 3D grafikleri mevcut.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div id="sol-detail" class="card">
+    <div class="card-title">Seçili Çözüm: u<sub>S1</sub></div>
+    <div id="sol-detail-content">
+      <div class="eq-box">
+        <span class="eq-label">ERSCM Durum 1 — u_S1</span>
+        u<span class="eq-sub">S1</span> <span class="eq-op">= </span>
+        <span class="eq-var">γ₀ cosh(Ξ)</span> <span class="eq-op">/</span>
+        <span class="eq-var">γ₁ [sinh(Ξ) + i]</span><br><br>
+        Ξ <span class="eq-op">= (12β²γ₀²t)/(γ₁²δ₁μ) − (1/2)δ₁³μ³t + δ₁μx + (2βγ₀y)/γ₁</span>
+      </div>
+      <div class="grid2" style="gap:1rem;margin-top:1rem">
+        <div>
+          <h3 style="color:var(--accent2)">Fiziksel Yorum</h3>
+          <p style="font-size:13px">Kompleks değerli bir soliton dalgasıdır. Gerçek kısmı (Re) düzenli soliton profili, sanal kısmı (Im) ise bir Gauss benzeri tepe yapısı sergiler. Parametre: γ₂=iγ₁.</p>
+        </div>
+        <div>
+          <h3 style="color:var(--accent2)">Parametre Seti (Grafik)</h3>
+          <div class="eq-box" style="font-size:12px">
+            y=2/3, μ=6/5, β=1/3<br>
+            γ₀=−3/2, γ₁=9/4, δ₁=3/2<br>
+            <span class="eq-comment">−10 ≤ x ≤ 10, −10 ≤ t ≤ 10</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ VISUALIZER ═══ -->
+<section id="visualizer" class="section">
+  <h2 style="margin-bottom:.5rem">İnteraktif Çözüm Görselleştirici</h2>
+  <p style="margin-bottom:1.5rem">Parametreleri değiştirerek dalga çözümlerini gerçek zamanlı keşfedin.</p>
+
+  <div class="grid2" style="gap:2rem; align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-title">Çözüm Seçimi</div>
+        <select class="case-select" id="vis-solution" onchange="updatePlot()">
+          <option value="soliton_real">Soliton — Re[u_S1] (ERSCM D1)</option>
+          <option value="soliton_imag">Soliton — Im[u_S1] (ERSCM D1)</option>
+          <option value="coth_sol">Hiperbolik Coth — u_S3 (ERSCM D3)</option>
+          <option value="trig_sol">Trigonometrik — u_12 (METM D1.2)</option>
+          <option value="rational">Rasyonel — u_13 (METM D1.3)</option>
+        </select>
+
+        <div class="card-title" style="margin-top:1.2rem">Parametreler</div>
+
+        <div class="param-row">
+          <label>β</label>
+          <input type="range" id="p-beta" min="-1" max="1" step="0.05" value="0.33" oninput="updateParam('beta', this)">
+          <span class="val" id="v-beta">0.33</span>
+        </div>
+        <div class="param-row">
+          <label>μ</label>
+          <input type="range" id="p-mu" min="0.2" max="3" step="0.05" value="1.2" oninput="updateParam('mu', this)">
+          <span class="val" id="v-mu">1.20</span>
+        </div>
+        <div class="param-row">
+          <label>δ₁</label>
+          <input type="range" id="p-d1" min="0.2" max="3" step="0.05" value="1.5" oninput="updateParam('d1', this)">
+          <span class="val" id="v-d1">1.50</span>
+        </div>
+        <div class="param-row">
+          <label>γ₀</label>
+          <input type="range" id="p-g0" min="-3" max="3" step="0.1" value="-1.5" oninput="updateParam('g0', this)">
+          <span class="val" id="v-g0">-1.50</span>
+        </div>
+        <div class="param-row">
+          <label>γ₁</label>
+          <input type="range" id="p-g1" min="0.1" max="4" step="0.1" value="2.25" oninput="updateParam('g1', this)">
+          <span class="val" id="v-g1">2.25</span>
+        </div>
+        <div class="param-row">
+          <label>y</label>
+          <input type="range" id="p-y" min="-3" max="3" step="0.1" value="0.67" oninput="updateParam('y0', this)">
+          <span class="val" id="v-y0">0.67</span>
+        </div>
+        <div class="param-row">
+          <label>t</label>
+          <input type="range" id="p-t" min="-5" max="5" step="0.25" value="0" oninput="updateParam('t0', this)">
+          <span class="val" id="v-t0">0.00</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Parametre Bilgisi</div>
+        <div id="param-info" style="font-size:13px;color:var(--muted);line-height:1.8">
+          α ve δ₂ değerleri seçilen çözüme ait parametrik denklemlerden otomatik hesaplanır.
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-title">2D Profil — u(x, t=sabit)</div>
+        <div class="chart-wrap" style="height:280px">
+          <canvas id="chart-2d"></canvas>
+        </div>
+      </div>
+      <div class="card" style="margin-top:1.5rem">
+        <div class="card-title">Zaman Evrimi — u(x=0, t)</div>
+        <div class="chart-wrap" style="height:220px">
+          <canvas id="chart-time"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <h2 style="margin-bottom:1rem">Parametre Bağımlılığı Analizi</h2>
+  <div class="card">
+    <div class="card-title">β Değerinin Dalga Genliğine Etkisi</div>
+    <div class="chart-wrap" style="height:260px">
+      <canvas id="chart-beta"></canvas>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ COMPARE ═══ -->
+<section id="compare" class="section">
+  <h2 style="margin-bottom:.5rem">Yöntem Karşılaştırması</h2>
+  <p>ERSCM ve METM'in yapısal karşılaştırması ve özellik analizi.</p>
+
+  <div class="grid2" style="gap:1.5rem;margin-bottom:2rem">
+    <div class="card">
+      <div class="card-title">ERSCM — Özellikler</div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 0;color:var(--muted)">Çözüm formu</td>
+          <td style="padding:8px 0;color:var(--text)">sinh/cosh oranı</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 0;color:var(--muted)">Parametre sayısı</td>
+          <td style="padding:8px 0;color:var(--text)">3 (γ₀, γ₁, γ₂, μ)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 0;color:var(--muted)">Bulunan çözüm</td>
+          <td style="padding:8px 0;color:var(--text)">3 ana durum</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 0;color:var(--muted)">Çözüm tipi</td>
+          <td style="padding:8px 0;color:var(--text)">Solitonik, hiperbolik</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;color:var(--muted)">Güçlü yönü</td>
+          <td style="padding:8px 0;color:var(--text)">Soliton profilleri</td>
+        </tr>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">METM — Özellikler</div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse">
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 0;color:var(--muted)">Çözüm formu</td>
+          <td style="padding:8px 0;color:var(--text)">a₀ + a₁φ + b₁/φ</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 0;color:var(--muted)">Parametre sayısı</td>
+          <td style="padding:8px 0;color:var(--text)">5 (a₀, a₁, b₁, b, δᵢ)</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 0;color:var(--muted)">Bulunan çözüm</td>
+          <td style="padding:8px 0;color:var(--text)">8+ alt durum</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:8px 0;color:var(--muted)">Çözüm tipi</td>
+          <td style="padding:8px 0;color:var(--text)">Hiperbolik, trig, rasyonel</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;color:var(--muted)">Güçlü yönü</td>
+          <td style="padding:8px 0;color:var(--text)">Geniş çözüm ailesi</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-title">Çözüm Tipi Dağılımı</div>
+    <div class="chart-wrap" style="height:260px">
+      <canvas id="chart-compare"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Önceki Çalışmalarla Karşılaştırma</div>
+    <p style="font-size:13px">KD denklemi daha önce farklı yöntemlerle incelenmiştir:</p>
+    <table style="width:100%;font-size:13px;border-collapse:collapse">
+      <thead>
+        <tr style="border-bottom:1px solid var(--border2)">
+          <th style="text-align:left;padding:10px 0;color:var(--muted);font-weight:400;font-family:var(--mono);font-size:10px;letter-spacing:1px">YÖNTEM</th>
+          <th style="text-align:left;padding:10px 0;color:var(--muted);font-weight:400;font-family:var(--mono);font-size:10px;letter-spacing:1px">KAYNAKLAR</th>
+          <th style="text-align:left;padding:10px 0;color:var(--muted);font-weight:400;font-family:var(--mono);font-size:10px;letter-spacing:1px">ÇÖZÜM TİPİ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:9px 0;color:var(--text)">Sato teorisi + Hirota</td>
+          <td style="padding:9px 0;color:var(--muted)">[16] Yuan et al. 2018</td>
+          <td style="padding:9px 0;color:var(--accent2)">Soliton</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:9px 0;color:var(--text)">Jacobi eliptik fonk.</td>
+          <td style="padding:9px 0;color:var(--muted)">[17] Sheng 2006</td>
+          <td style="padding:9px 0;color:var(--accent2)">Periodik</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:9px 0;color:var(--text)">Modifiye yardımcı denklem</td>
+          <td style="padding:9px 0;color:var(--muted)">[18] Khater et al. 2019</td>
+          <td style="padding:9px 0;color:var(--accent2)">Lump-soliton</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:9px 0;color:var(--text)">Painlevé + Möbius</td>
+          <td style="padding:9px 0;color:var(--muted)">[19] Ren et al. 2016</td>
+          <td style="padding:9px 0;color:var(--accent2)">Nonlokal simetri</td>
+        </tr>
+        <tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:9px 0;color:var(--text)">F-expansion (geliştirilmiş)</td>
+          <td style="padding:9px 0;color:var(--muted)">[21] Wang & Zhang 2005</td>
+          <td style="padding:9px 0;color:var(--accent2)">Eliptik + hiperbolik</td>
+        </tr>
+        <tr>
+          <td style="padding:9px 0;color:var(--accent)">ERSCM + METM ★</td>
+          <td style="padding:9px 0;color:var(--accent)">Bu çalışma — Mahmud 2023</td>
+          <td style="padding:9px 0;color:var(--accent)">İlk kez · Hiperb. + Trig + Rasl.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════ REFERENCES ═══ -->
+<section id="references" class="section">
+  <h2 style="margin-bottom:1.5rem">Kaynaklar</h2>
+  <ul class="ref-list">
+    <li><span class="rn">[1]</span>Muhamad K.A., Tanriverdi T., Mahmud A.A., Baskonus H.M. — Interaction characteristics of the Riemann wave propagation in the (2+1)-dimensional generalized breaking soliton system. <em>Int. J. Computer Mathematics</em>, 100(6), 1340–1355, 2023.</li>
+    <li><span class="rn">[2]</span>Baskonus H.M., Mahmud A.A., et al. — A study on Caudrey-Dodd-Gibbon-Sawada-Kotera PDE. <em>Math. Methods Applied Sciences</em>, 45(14), 8737–8753, 2022.</li>
+    <li><span class="rn">[9]</span>Dubey S., Chakraverty S. — Application of modified extended tanh method in solving fractional order coupled wave equations. <em>Math. and Computers in Simulation</em>, 198, 509–520, 2022.</li>
+    <li><span class="rn">[15]</span>Konopelchenko B.G., Dubrovsky V.G. — Some new integrable nonlinear evolution equations in (2+1)-dimensions. <em>Physics Letters A</em>, 102(1-2), 15–17, 1984. <span style="color:var(--accent)">★ Temel referans</span></li>
+    <li><span class="rn">[16]</span>Yuan Y.Q., Tian B., Liu L., Wu X.Y., Sun Y. — Solitons for the (2+1)-dimensional Konopelchenko-Dubrovsky equations. <em>J. Math. Analysis and Applications</em>, 460(1), 476–486, 2018.</li>
+    <li><span class="rn">[17]</span>Sheng Z. — The periodic wave solutions for the (2+1)-dimensional KD equations. <em>Chaos Solitons and Fractals</em>, 30(5), 1213–1220, 2006.</li>
+    <li><span class="rn">[18]</span>Khater M.M.A., Lu D., Attia R.A.M. — Lump soliton wave solutions for the (2+1)-dimensional KD equation and KdV equation. <em>Modern Physics Letters B</em>, 33(18), 1950199, 2019.</li>
+    <li><span class="rn">[20]</span>Ma H., Bai Y., Deng A. — Multiple lump solutions of the (2+1)-dimensional KD equation. <em>Math. Methods Applied Sciences</em>, 43(12), 7135–7142, 2020.</li>
+    <li><span class="rn">[21]</span>Wang D., Zhang H.Q. — Further improved F-expansion method and new exact solutions of KD equation. <em>Chaos Solitons and Fractals</em>, 25(3), 601–610, 2005.</li>
+    <li><span class="rn">[23]</span>Wu P., Zhang Y., Muhammad I., Yin Q. — Complexiton and resonant multiple wave solutions to the (2+1)-dimensional KD equation. <em>Computers and Math. with Applications</em>, 76(4), 845–853, 2018.</li>
+  </ul>
+</section>
+
+<!-- ═══════════════════════════════════════════════ SIMULATOR ═══ -->
+<section id="simulator" class="section">
+
+<style>
+/* ── SIM SCOPED STYLES ── */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Syne:wght@400;600;700;800&display=swap');
+#sim-root {
+  --sim-bg:     #080a0f;
+  --sim-bg2:    #0d1018;
+  --sim-bg3:    #131620;
+  --sim-card:   #161922;
+  --sim-border: rgba(255,255,255,0.06);
+  --sim-border2:rgba(255,255,255,0.12);
+  --sim-border3:rgba(255,255,255,0.22);
+  --sim-text:   #ddd8cc;
+  --sim-muted:  #6b6860;
+  --sim-dim:    #3a3830;
+  --sim-gold:   #e8c06a;
+  --sim-teal:   #4ecdc4;
+  --sim-red:    #e05c5c;
+  --sim-blue:   #5b9bd5;
+  --sim-green:  #6bcb77;
+  --sim-mono:   'JetBrains Mono', monospace;
+  --sim-sans:   'Syne', sans-serif;
+  font-family: var(--sim-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--sim-text);
+  background: var(--sim-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+#sim-root *, #sim-root *::before, #sim-root *::after { box-sizing: border-box; margin:0; padding:0; }
+
+/* grid noise */
+#sim-root::before {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background-image: linear-gradient(rgba(232,192,106,0.015) 1px,transparent 1px),
+                    linear-gradient(90deg,rgba(232,192,106,0.015) 1px,transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* header */
+#sim-root .sim-header {
+  position:relative; z-index:10;
+  border-bottom:1px solid var(--sim-border);
+  padding:0 2rem; height:48px;
+  display:flex; align-items:center; justify-content:space-between;
+  background:rgba(8,10,15,0.95);
+}
+#sim-root .sim-logo {
+  font-family:var(--sim-sans); font-weight:800; font-size:14px;
+  color:var(--sim-gold); letter-spacing:-0.5px;
+  display:flex; align-items:center; gap:10px;
+}
+#sim-root .sim-logo-icon {
+  width:26px; height:26px; border:1.5px solid var(--sim-gold); border-radius:4px;
+  display:flex; align-items:center; justify-content:center; font-size:12px;
+}
+#sim-root .sim-badge {
+  font-size:9px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--sim-muted); border:1px solid var(--sim-dim); padding:3px 9px; border-radius:2px;
+}
+#sim-root .sim-badge.active { color:var(--sim-teal); border-color:var(--sim-teal); }
+
+/* app layout */
+#sim-root .sim-app {
+  position:relative; z-index:1;
+  display:grid; grid-template-columns:300px 1fr;
+  height:680px;
+}
+@media(max-width:900px){
+  #sim-root .sim-app { grid-template-columns:1fr; grid-template-rows:auto 1fr; height:auto; }
+}
+
+/* left panel */
+#sim-root .sim-left {
+  border-right:1px solid var(--sim-border);
+  overflow-y:auto; background:var(--sim-bg2);
+  display:flex; flex-direction:column;
+}
+#sim-root .sim-left::-webkit-scrollbar { width:3px; }
+#sim-root .sim-left::-webkit-scrollbar-thumb { background:var(--sim-dim); border-radius:2px; }
+#sim-root .sim-psec {
+  padding:1rem 1.25rem;
+  border-bottom:1px solid var(--sim-border);
+}
+#sim-root .sim-slabel {
+  font-size:9px; letter-spacing:2px; text-transform:uppercase;
+  color:var(--sim-muted); margin-bottom:.75rem;
+  display:flex; align-items:center; gap:8px;
+}
+#sim-root .sim-slabel::after { content:''; flex:1; height:1px; background:var(--sim-border); }
+
+/* phys cards */
+#sim-root .sim-phys-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:5px;
+}
+#sim-root .sim-phys-card {
+  background:var(--sim-card); border:1px solid var(--sim-border);
+  border-radius:4px; padding:.6rem .75rem; cursor:pointer; transition:all .2s; text-align:center;
+}
+#sim-root .sim-phys-card:hover { border-color:var(--sim-border2); }
+#sim-root .sim-phys-card.active { border-color:var(--sim-teal); background:rgba(78,205,196,0.05); }
+#sim-root .spi { font-size:16px; margin-bottom:3px; }
+#sim-root .spn { font-family:var(--sim-sans); font-size:10px; font-weight:600; color:var(--sim-text); }
+
+/* select */
+#sim-root .sim-select {
+  background:var(--sim-bg3); border:1px solid var(--sim-border2);
+  border-radius:3px; color:var(--sim-text); font-family:var(--sim-mono);
+  font-size:11px; padding:6px 10px; width:100%; outline:none; cursor:pointer;
+}
+#sim-root .sim-select:focus { border-color:var(--sim-gold); }
+
+/* input group */
+#sim-root .sim-ig { margin-bottom:.7rem; }
+#sim-root .sim-il {
+  display:flex; justify-content:space-between; align-items:baseline;
+  margin-bottom:4px; font-size:10px; color:var(--sim-muted);
+}
+#sim-root .sim-il .pn { color:var(--sim-text); font-size:11px; }
+#sim-root .sim-il .pv { color:var(--sim-gold); font-weight:600; }
+#sim-root .sim-sw { height:18px; display:flex; align-items:center; }
+#sim-root input[type=range] {
+  -webkit-appearance:none; width:100%; height:2px;
+  background:var(--sim-dim); border-radius:1px; outline:none; cursor:pointer;
+}
+#sim-root input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:13px; height:13px; border-radius:50%;
+  background:var(--sim-gold); box-shadow:0 0 0 3px rgba(232,192,106,0.15);
+}
+
+/* preset grid */
+#sim-root .sim-preset-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px; }
+#sim-root .sim-preset-btn {
+  background:var(--sim-bg3); border:1px solid var(--sim-border); border-radius:3px;
+  padding:7px 8px; font-size:9px; color:var(--sim-muted); cursor:pointer; text-align:left;
+  line-height:1.5; transition:all .18s; font-family:var(--sim-mono);
+}
+#sim-root .sim-preset-btn:hover { border-color:var(--sim-border2); color:var(--sim-text); }
+#sim-root .sim-preset-btn .pbn { color:var(--sim-teal); font-weight:600; font-size:9px; display:block; margin-bottom:1px; }
+
+/* run btn */
+#sim-root .sim-run-btn {
+  width:100%; padding:11px; background:var(--sim-gold); border:none; border-radius:4px;
+  color:var(--sim-bg); font-family:var(--sim-sans); font-size:12px; font-weight:700;
+  letter-spacing:1px; text-transform:uppercase; cursor:pointer; transition:all .2s;
+}
+#sim-root .sim-run-btn:hover { opacity:.9; }
+#sim-root .sim-run-btn:active { transform:scale(0.98); }
+#sim-root .sim-run-btn.running { background:var(--sim-teal); }
+
+/* right panel */
+#sim-root .sim-right { display:flex; flex-direction:column; overflow:hidden; background:var(--sim-bg); }
+
+/* tab bar */
+#sim-root .sim-tabbar {
+  display:flex; border-bottom:1px solid var(--sim-border);
+  background:var(--sim-bg2); padding:0 1.25rem; flex-shrink:0; gap:0;
+}
+#sim-root .sim-tabbtn {
+  font-family:var(--sim-mono); font-size:10px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--sim-muted); background:none; border:none; padding:13px 14px; cursor:pointer;
+  border-bottom:2px solid transparent; margin-bottom:-1px; transition:all .18s; white-space:nowrap;
+}
+#sim-root .sim-tabbtn:hover { color:var(--sim-text); }
+#sim-root .sim-tabbtn.active { color:var(--sim-gold); border-bottom-color:var(--sim-gold); }
+
+/* content */
+#sim-root .sim-content {
+  flex:1; overflow-y:auto; padding:1.25rem;
+}
+#sim-root .sim-content::-webkit-scrollbar { width:3px; }
+#sim-root .sim-content::-webkit-scrollbar-thumb { background:var(--sim-dim); }
+#sim-root .sim-tabpanel { display:none; }
+#sim-root .sim-tabpanel.active { display:block; }
+
+/* chart card */
+#sim-root .sim-cc {
+  background:var(--sim-card); border:1px solid var(--sim-border);
+  border-radius:6px; padding:1.1rem; margin-bottom:1.1rem;
+}
+#sim-root .sim-ct {
+  font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--sim-muted);
+  margin-bottom:.9rem; display:flex; justify-content:space-between; align-items:center;
+}
+#sim-root .sim-ct .ctv { color:var(--sim-gold); font-size:11px; letter-spacing:0; }
+#sim-root .sim-cw { position:relative; width:100%; }
+
+/* results grid */
+#sim-root .sim-rg {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:.9rem; margin-bottom:1.1rem;
+}
+@media(max-width:900px){ #sim-root .sim-rg { grid-template-columns:1fr 1fr; } }
+#sim-root .sim-rc {
+  background:var(--sim-card); border:1px solid var(--sim-border); border-radius:6px;
+  padding:.9rem; text-align:center; position:relative; overflow:hidden;
+}
+#sim-root .sim-rc::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:var(--rc-accent, var(--sim-gold));
+}
+#sim-root .rcl { font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:var(--sim-muted); margin-bottom:5px; }
+#sim-root .rcv { font-family:var(--sim-sans); font-size:20px; font-weight:700; color:var(--sim-text); line-height:1; }
+#sim-root .rcu { font-size:9px; color:var(--sim-muted); margin-top:3px; }
+
+/* formula box */
+#sim-root .sim-fbox {
+  background:var(--sim-bg3); border:1px solid var(--sim-border2);
+  border-left:3px solid var(--sim-gold); border-radius:0 4px 4px 0;
+  padding:10px 14px; font-size:11px; line-height:2; color:var(--sim-teal);
+  font-family:var(--sim-mono); margin-bottom:.9rem; overflow-x:auto;
+}
+#sim-root .sim-fbox .fl { color:var(--sim-muted); font-size:9px; letter-spacing:1px; text-transform:uppercase; display:block; margin-bottom:5px; }
+#sim-root .sim-fbox .fv { color:var(--sim-gold); }
+#sim-root .sim-fbox .fo { color:var(--sim-text); }
+
+/* analysis table */
+#sim-root .sim-atable { width:100%; border-collapse:collapse; font-size:11px; }
+#sim-root .sim-atable th {
+  text-align:left; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--sim-muted); padding:7px 10px; border-bottom:1px solid var(--sim-border); font-weight:400;
+}
+#sim-root .sim-atable td { padding:9px 10px; border-bottom:1px solid var(--sim-border); color:var(--sim-text); }
+#sim-root .sim-atable tr:last-child td { border-bottom:none; }
+#sim-root .sim-atable tr:hover td { background:rgba(255,255,255,0.02); }
+#sim-root .tdm { font-family:var(--sim-mono); color:var(--sim-gold); }
+#sim-root .tdb {
+  display:inline-block; font-size:9px; letter-spacing:.5px;
+  padding:2px 7px; border-radius:2px; border:1px solid;
+}
+#sim-root .tdb.wave    { color:var(--sim-teal); border-color:var(--sim-teal); background:rgba(78,205,196,0.08); }
+#sim-root .tdb.soliton { color:var(--sim-gold); border-color:var(--sim-gold); background:rgba(232,192,106,0.08); }
+#sim-root .tdb.rational{ color:var(--sim-blue); border-color:var(--sim-blue); background:rgba(91,155,213,0.08); }
+
+/* info alert */
+#sim-root .sim-ia {
+  background:rgba(78,205,196,0.06); border:1px solid rgba(78,205,196,0.2);
+  border-radius:4px; padding:10px 12px; font-size:11px; color:var(--sim-muted);
+  line-height:1.7; margin-bottom:.9rem;
+}
+#sim-root .sim-ia strong { color:var(--sim-teal); }
+
+/* status bar */
+#sim-root .sim-statusbar {
+  height:26px; border-top:1px solid var(--sim-border); background:var(--sim-bg2);
+  padding:0 1.25rem; display:flex; align-items:center; gap:1.25rem;
+  font-size:9px; letter-spacing:1px; color:var(--sim-muted); flex-shrink:0;
+}
+#sim-root .sim-sdot {
+  width:6px; height:6px; border-radius:50%; background:var(--sim-green);
+  box-shadow:0 0 6px var(--sim-green); flex-shrink:0;
+}
+#sim-root .sim-sdot.computing { background:var(--sim-gold); box-shadow:0 0 6px var(--sim-gold); animation:simpulse .6s infinite; }
+@keyframes simpulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+#sim-root .sim-coord { margin-left:auto; font-family:var(--sim-mono); font-size:9px; color:var(--sim-muted); }
+</style>
+
+<div id="sim-root">
+
+  <!-- SIM HEADER -->
+  <div class="sim-header">
+    <div class="sim-logo">
+      <div class="sim-logo-icon">∿</div>
+      KD Dalga Simülatörü
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="sim-badge">v2.0</span>
+      <span class="sim-badge active">SİMÜLATÖR</span>
+    </div>
+  </div>
+
+  <div class="sim-app">
+
+    <!-- LEFT PANEL -->
+    <div class="sim-left">
+
+      <!-- Uygulama Alanı -->
+      <div class="sim-psec">
+        <div class="sim-slabel">Uygulama Alanı</div>
+        <div class="sim-phys-grid">
+          <div class="sim-phys-card active" onclick="simSetPhys('ocean',this)">
+            <div class="spi">🌊</div><div class="spn">Okyanus</div>
+          </div>
+          <div class="sim-phys-card" onclick="simSetPhys('plasma',this)">
+            <div class="spi">⚡</div><div class="spn">Plazma</div>
+          </div>
+          <div class="sim-phys-card" onclick="simSetPhys('optic',this)">
+            <div class="spi">🔬</div><div class="spn">Optik</div>
+          </div>
+          <div class="sim-phys-card" onclick="simSetPhys('seismic',this)">
+            <div class="spi">🏗️</div><div class="spn">Sismik</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Çözüm Yöntemi -->
+      <div class="sim-psec">
+        <div class="sim-slabel">Çözüm Yöntemi</div>
+        <select class="sim-select" id="sim-method" onchange="simUpdateMethod()">
+          <option value="erscm1">ERSCM — Durum 1 (Kompleks Soliton)</option>
+          <option value="erscm3">ERSCM — Durum 3 (Hiperbolik Coth)</option>
+          <option value="metm12">METM — Durum 1.2 (Trigonometrik)</option>
+          <option value="metm22">METM — Durum 2.2 (Periodik)</option>
+          <option value="metm32">METM — Durum 3.2 (Cot Tabanlı)</option>
+          <option value="rational">METM — Rasyonel</option>
+        </select>
+      </div>
+
+      <!-- Parametreler -->
+      <div class="sim-psec">
+        <div class="sim-slabel">Dalga Parametreleri</div>
+        <div class="sim-ig">
+          <div class="sim-il"><span class="pn">β — Dispersyon</span><span class="pv" id="sv-beta">0.33</span></div>
+          <div class="sim-sw"><input type="range" id="ss-beta" min="-1.5" max="1.5" step="0.01" value="0.33" oninput="simSync('beta',this.value)"></div>
+        </div>
+        <div class="sim-ig">
+          <div class="sim-il"><span class="pn">α — Nonlineerlik</span><span class="pv" id="sv-alpha">0.80</span></div>
+          <div class="sim-sw"><input type="range" id="ss-alpha" min="-2" max="2" step="0.01" value="0.80" oninput="simSync('alpha',this.value)"></div>
+        </div>
+        <div class="sim-ig">
+          <div class="sim-il"><span class="pn">μ — Dalga sayısı</span><span class="pv" id="sv-mu">1.20</span></div>
+          <div class="sim-sw"><input type="range" id="ss-mu" min="0.1" max="3" step="0.01" value="1.20" oninput="simSync('mu',this.value)"></div>
+        </div>
+        <div class="sim-ig">
+          <div class="sim-il"><span class="pn">δ₁ — Yatay hız</span><span class="pv" id="sv-d1">1.50</span></div>
+          <div class="sim-sw"><input type="range" id="ss-d1" min="0.2" max="3" step="0.01" value="1.50" oninput="simSync('d1',this.value)"></div>
+        </div>
+        <div class="sim-ig">
+          <div class="sim-il"><span class="pn">γ₀ — Genlik</span><span class="pv" id="sv-g0">-1.50</span></div>
+          <div class="sim-sw"><input type="range" id="ss-g0" min="-3" max="3" step="0.01" value="-1.50" oninput="simSync('g0',this.value)"></div>
+        </div>
+        <div class="sim-ig">
+          <div class="sim-il"><span class="pn">γ₁ — Faz</span><span class="pv" id="sv-g1">2.25</span></div>
+          <div class="sim-sw"><input type="range" id="ss-g1" min="0.1" max="4" step="0.01" value="2.25" oninput="simSync('g1',this.value)"></div>
+        </div>
+      </div>
+
+      <!-- Uzay/Zaman -->
+      <div class="sim-psec">
+        <div class="sim-slabel">Uzay / Zaman</div>
+        <div class="sim-ig">
+          <div class="sim-il"><span class="pn">y — Kesit</span><span class="pv" id="sv-y">0.67</span></div>
+          <div class="sim-sw"><input type="range" id="ss-y" min="-5" max="5" step="0.01" value="0.67" oninput="simSync('y',this.value)"></div>
+        </div>
+        <div class="sim-ig">
+          <div class="sim-il"><span class="pn">t — Zaman</span><span class="pv" id="sv-t">0.00</span></div>
+          <div class="sim-sw"><input type="range" id="ss-t" min="-8" max="8" step="0.1" value="0" oninput="simSync('t',this.value)"></div>
+        </div>
+      </div>
+
+      <!-- Hazır Senaryolar -->
+      <div class="sim-psec">
+        <div class="sim-slabel">Hazır Senaryolar</div>
+        <div class="sim-preset-grid">
+          <button class="sim-preset-btn" onclick="simPreset('tsunami')"><span class="pbn">🌊 Tsunami</span><span>Derin okyanus</span></button>
+          <button class="sim-preset-btn" onclick="simPreset('soliton')"><span class="pbn">⚡ Soliton</span><span>Kararlı tepe</span></button>
+          <button class="sim-preset-btn" onclick="simPreset('plasma')"><span class="pbn">🔴 Plazma</span><span>İyon akustik</span></button>
+          <button class="sim-preset-btn" onclick="simPreset('optic')"><span class="pbn">💡 Optik</span><span>Fiber soliton</span></button>
+          <button class="sim-preset-btn" onclick="simPreset('shallow')"><span class="pbn">🏖️ Sığ Su</span><span>Kıyı dalgası</span></button>
+          <button class="sim-preset-btn" onclick="simPreset('seismic')"><span class="pbn">🏗️ Sismik</span><span>Deprem dalgası</span></button>
+        </div>
+      </div>
+
+      <!-- Run -->
+      <div class="sim-psec">
+        <button class="sim-run-btn" id="sim-run-btn" onclick="simRun()">▶ SİMÜLASYONU ÇALIŞTIR</button>
+      </div>
+
+    </div><!-- /left -->
+
+    <!-- RIGHT PANEL -->
+    <div class="sim-right">
+
+      <div class="sim-tabbar">
+        <button class="sim-tabbtn active" onclick="simShowTab('wave',this)">Dalga Profili</button>
+        <button class="sim-tabbtn" onclick="simShowTab('time',this)">Zaman Evrimi</button>
+        <button class="sim-tabbtn" onclick="simShowTab('phase',this)">Faz Uzayı</button>
+        <button class="sim-tabbtn" onclick="simShowTab('analysis',this)">Analiz</button>
+        <button class="sim-tabbtn" onclick="simShowTab('phys',this)">Fiziksel Yorum</button>
+      </div>
+
+      <div class="sim-content">
+
+        <!-- TAB: WAVE -->
+        <div id="stab-wave" class="sim-tabpanel active">
+          <div class="sim-rg">
+            <div class="sim-rc" style="--rc-accent:var(--sim-gold)"><div class="rcl">Maks. Genlik</div><div class="rcv" id="sm-amp">—</div><div class="rcu">u_max</div></div>
+            <div class="sim-rc" style="--rc-accent:var(--sim-teal)"><div class="rcl">Dalga Hızı</div><div class="rcv" id="sm-speed">—</div><div class="rcu">δ₃/δ₁</div></div>
+            <div class="sim-rc" style="--rc-accent:var(--sim-blue)"><div class="rcl">Dalga Boyu</div><div class="rcv" id="sm-lambda">—</div><div class="rcu">2π/μδ₁</div></div>
+            <div class="sim-rc" style="--rc-accent:var(--sim-red)"><div class="rcl">Dispersyon</div><div class="rcv" id="sm-disp">—</div><div class="rcu">β·μ²</div></div>
+          </div>
+          <div class="sim-cc">
+            <div class="sim-ct"><span>u(x, t=sabit) — Anlık Dalga Profili</span><span class="ctv" id="sct-method">ERSCM D1</span></div>
+            <div class="sim-cw" style="height:240px"><canvas id="sc-wave"></canvas></div>
+          </div>
+          <div class="sim-cc">
+            <div class="sim-ct"><span>3D-benzeri: farklı t için u(x)</span><span class="ctv" id="sct-multi"></span></div>
+            <div class="sim-cw" style="height:200px"><canvas id="sc-multi"></canvas></div>
+          </div>
+        </div>
+
+        <!-- TAB: TIME -->
+        <div id="stab-time" class="sim-tabpanel">
+          <div class="sim-cc">
+            <div class="sim-ct">u(x=0, t) — Zamansal Evrim</div>
+            <div class="sim-cw" style="height:260px"><canvas id="sc-time"></canvas></div>
+          </div>
+          <div class="sim-cc">
+            <div class="sim-ct">Maksimum Genlik vs Zaman</div>
+            <div class="sim-cw" style="height:200px"><canvas id="sc-amptime"></canvas></div>
+          </div>
+        </div>
+
+        <!-- TAB: PHASE -->
+        <div id="stab-phase" class="sim-tabpanel">
+          <div class="sim-ia">
+            <strong>Faz Uzayı:</strong> Yatay eksen dalga genliği u(x), dikey eksen birinci türev u'(x).
+            Kapalı yörüngeler <strong>periodik</strong>, açık yörüngeler <strong>soliton</strong> tipi davranışa işaret eder.
+          </div>
+          <div class="sim-cc">
+            <div class="sim-ct">u vs u' — Faz Portresi</div>
+            <div class="sim-cw" style="height:340px"><canvas id="sc-phase"></canvas></div>
+          </div>
+        </div>
+
+        <!-- TAB: ANALYSIS -->
+        <div id="stab-analysis" class="sim-tabpanel">
+          <div class="sim-fbox" id="sim-formula">
+            <span class="fl">Aktif Çözüm Formülü</span>
+            <span id="sim-formula-text"></span>
+          </div>
+          <div class="sim-cc">
+            <div class="sim-ct">β Parametresinin Dalga Genliğine Etkisi</div>
+            <div class="sim-cw" style="height:190px"><canvas id="sc-beta"></canvas></div>
+          </div>
+          <div class="sim-cc">
+            <div class="sim-ct">μ (Dalga Sayısı) Taraması</div>
+            <div class="sim-cw" style="height:190px"><canvas id="sc-mu"></canvas></div>
+          </div>
+          <div class="sim-cc" style="margin-top:1rem">
+            <div class="sim-ct">Hesaplanan Parametreler</div>
+            <table class="sim-atable">
+              <thead><tr><th>Parametre</th><th>Değer</th><th>Açıklama</th><th>Tip</th></tr></thead>
+              <tbody id="sim-ptbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB: PHYS -->
+        <div id="stab-phys" class="sim-tabpanel">
+          <div id="sim-phys-content"></div>
+        </div>
+
+      </div><!-- /content -->
+
+      <!-- STATUS BAR -->
+      <div class="sim-statusbar">
+        <div class="sim-sdot" id="sim-sdot"></div>
+        <span id="sim-stext">Hazır</span>
+        <span>|</span>
+        <span id="sim-smethod">ERSCM D1</span>
+        <span>|</span>
+        <span id="sim-spts">N=200 nokta</span>
+        <div class="sim-coord" id="sim-coord">x: — &nbsp; u: —</div>
+      </div>
+
+    </div><!-- /right -->
+  </div><!-- /app -->
+</div><!-- /sim-root -->
+
+<script>
+(function(){
+// ── STATE ──
+const SP = {
+  beta:0.33, alpha:0.8, mu:1.2,
+  d1:1.5, g0:-1.5, g1:2.25,
+  y:0.67, t:0, method:'erscm1', physMode:'ocean'
+};
+const SC = {};
+const SN = 200;
+
+// ── SYNC ──
+window.simSync = function(key, val) {
+  SP[key] = parseFloat(val);
+  const el = document.getElementById('sv-'+key);
+  if (el) el.textContent = SP[key].toFixed(2);
+  simRun();
+};
+
+// ── PRESETS ──
+const SPRESETS = {
+  tsunami: {beta:0.1,alpha:0.3,mu:0.4,d1:2.0,g0:-2.0,g1:3.0,y:0.5,t:0,method:'erscm3',physMode:'ocean'},
+  soliton: {beta:0.33,alpha:0.8,mu:1.2,d1:1.5,g0:-1.5,g1:2.25,y:0.67,t:0,method:'erscm1',physMode:'ocean'},
+  plasma:  {beta:0.5,alpha:1.2,mu:1.8,d1:1.0,g0:1.5,g1:1.5,y:0.3,t:0,method:'metm12',physMode:'plasma'},
+  optic:   {beta:-0.3,alpha:1.5,mu:2.0,d1:0.8,g0:-1.0,g1:1.0,y:0.1,t:0,method:'metm22',physMode:'optic'},
+  shallow: {beta:0.2,alpha:0.5,mu:0.8,d1:1.8,g0:-2.5,g1:2.0,y:1.0,t:0,method:'erscm3',physMode:'ocean'},
+  seismic: {beta:0.4,alpha:0.7,mu:1.5,d1:1.2,g0:1.0,g1:2.0,y:0.2,t:1,method:'metm32',physMode:'seismic'}
+};
+window.simPreset = function(name) {
+  const pr = SPRESETS[name];
+  Object.assign(SP, pr);
+  for (const [k,v] of Object.entries(pr)) {
+    const s = document.getElementById('ss-'+k);
+    const vd = document.getElementById('sv-'+k);
+    if (s) s.value = v;
+    if (vd) vd.textContent = parseFloat(v).toFixed(2);
+  }
+  document.getElementById('sim-method').value = SP.method;
+  const pc = document.querySelector(`#sim-root .sim-phys-card[onclick*="${SP.physMode}"]`);
+  simSetPhys(SP.physMode, pc);
+  simRun();
+};
+
+// ── PHYS MODE ──
+window.simSetPhys = function(mode, el) {
+  SP.physMode = mode;
+  document.querySelectorAll('#sim-root .sim-phys-card').forEach(c=>c.classList.remove('active'));
+  if (el) el.classList.add('active');
+  simUpdatePhys();
+};
+
+const SPHYS = {
+  ocean:  { icon:'🌊', name:'Okyanus Dalgaları', desc:'KD denklemi, açık okyanusta yayılan uzun dalgaları modellemek için kullanılır.', params:[{p:'β',phys:'Dispersyon katsayısı',unit:'m²/s',note:'Su derinliğine bağlı'},{p:'α',phys:'Nonlineerlik',unit:'adımsız',note:'Dalga dikliği'},{p:'μ',phys:'Dalga sayısı',unit:'rad/m',note:'k=2π/λ'},{p:'δ₁',phys:'Yayılım hızı',unit:'m/s',note:'c=δ₃/δ₁'}], usecase:'Tsunami erken uyarı, liman tasarımı, kıyı koruma', hint:'H = 2|γ₀/γ₁| · u_max' },
+  plasma: { icon:'⚡', name:'Plazma Fiziği', desc:'İyon akustik dalgaları ve manyetik hapsetme sistemlerini modellemek için kullanılır.', params:[{p:'β',phys:'Manyetik dispersyon',unit:'T·m',note:'B alanı şiddetiyle ilgili'},{p:'α',phys:'Plazma nonlineerliği',unit:'adımsız',note:'İyon yoğunluğu'},{p:'μ',phys:'Dalga vektörü',unit:'rad/m',note:'Plazma frekansına göre'},{p:'δ₁',phys:'İyon ses hızı',unit:'m/s',note:'Cs=√(kT/m)'}], usecase:'ITER füzyon reaktörü, uzay plazma, manyetosfer', hint:'φ ∝ u · T_e/e' },
+  optic:  { icon:'🔬', name:'Fiber Optik', desc:'Cam fiber içinde yayılan optik solitonlar internet omurgasının temelidir.', params:[{p:'β',phys:'Grup hız dispersiyonu',unit:'ps²/km',note:'GVD katsayısı'},{p:'α',phys:'Kerr nonlineerliği',unit:'1/W·km',note:'n₂/Aeff'},{p:'μ',phys:'Mod yayılım sabiti',unit:'rad/m',note:'β₀=n_eff·k₀'},{p:'δ₁',phys:'Grup hızı',unit:'c/n_g',note:'Renk dispersiyonu'}], usecase:'Transatlantik fiber, WDM sistemleri, lazer iletişimi', hint:'P₀ = |β₂|/(γ·T₀²)' },
+  seismic:{ icon:'🏗️', name:'Sismik Dalgalar', desc:'Deprem dalgalarının zemin içindeki yayılımı KD tipi modellerle tanımlanabilir.', params:[{p:'β',phys:'Zemin dispersiyonu',unit:'Hz·m',note:'Katman kalınlığına bağlı'},{p:'α',phys:'Zemin nonlineerliği',unit:'adımsız',note:'Kayma modülü'},{p:'μ',phys:'Sismik dalga sayısı',unit:'rad/km',note:'f/Vs'},{p:'δ₁',phys:'S-dalgası hızı',unit:'km/s',note:'Vs=√(G/ρ)'}], usecase:'Deprem hasar tahmini, zemin sıvılaşması, yapı dinamiği', hint:'v_s = ω · u / k' }
+};
+
+function simUpdatePhys() {
+  const d = SPHYS[SP.physMode];
+  document.getElementById('sim-phys-content').innerHTML = `
+    <div class="sim-ia"><strong>${d.icon} ${d.name}:</strong> ${d.desc}</div>
+    <div class="sim-cc">
+      <div class="sim-ct">Parametre ↔ Fiziksel Anlam</div>
+      <table class="sim-atable"><thead><tr><th>KD Param.</th><th>Fiziksel Karşılık</th><th>Birim</th><th>Not</th></tr></thead>
+      <tbody>${d.params.map(r=>`<tr><td class="tdm">${r.p}</td><td>${r.phys}</td><td style="color:var(--sim-muted)">${r.unit}</td><td style="color:var(--sim-dim)">${r.note}</td></tr>`).join('')}</tbody></table>
+    </div>
+    <div class="sim-cc"><div class="sim-ct">Kullanım Alanı</div><div style="font-size:11px;color:var(--sim-muted);line-height:1.8;padding:2px 0">${d.usecase}</div></div>
+    <div class="sim-fbox"><span class="fl">Fiziksel İlişki</span><span class="fv">${d.hint}</span></div>`;
+}
+
+// ── SOLVE ──
+function sD2(){ return 2*SP.beta*SP.g0/(SP.g1*SP.mu); }
+function sD3(){ const {beta,mu,d1,g0,g1}=SP; return (24*beta*beta*g0*g0 - g1*g1*Math.pow(d1,4)*Math.pow(mu,4))/(2*g1*g1*d1*mu*mu); }
+function sXi(x,t){ const {beta,mu,d1,g0,g1,y}=SP; return (12*beta*beta*g0*g0*t)/(g1*g1*d1*mu)-0.5*Math.pow(d1,3)*Math.pow(mu,3)*t+d1*mu*x+2*beta*g0*y/g1; }
+
+function sSolve(method,x,t){
+  const {beta,mu,d1,g0,g1,y,alpha}=SP;
+  const d2=sD2(), d3=sD3();
+  switch(method){
+    case 'erscm1':{ const xi=sXi(x,t),sh=Math.sinh(xi),ch=Math.cosh(xi),dn=sh*sh+1; return dn<1e-12?0:g0*ch*sh/(g1*dn); }
+    case 'erscm3':{ const Th=(3*beta*beta*g0*g0*t)/(g1*g1*d1*mu)-2*Math.pow(d1,3)*Math.pow(mu,3)*t+d1*mu*x+beta*g0*y/g1,th=Math.tanh(Th); return Math.abs(th)<1e-10?0:(g0/g1)/th; }
+    case 'metm12':{ const b=0.0625,sb=Math.sqrt(b),sd1=Math.sqrt(Math.abs(d1)),term=16*b*Math.pow(d1,3)+d3; if(term<0)return 0; const L=d1*x-sd1*Math.sqrt(term)/Math.sqrt(3)*y+d3*t,v=sb*Math.tan(sb*L); return(!isFinite(v)||Math.abs(v)>50)?0:1.5*v; }
+    case 'metm22':{ const b=0.02,sb=Math.sqrt(b),a1=2.5,L=-0.5*alpha*a1*x+d2*y+(2*alpha*alpha*alpha*a1*a1*a1*b-6*d2*d2/(alpha*a1))*t,tv=Math.tan(sb*L),cv=1/Math.tan(sb*L); if(!isFinite(tv)||!isFinite(cv))return 0; const re=a1*sb*(tv-cv); return isFinite(re)?Math.max(-30,Math.min(30,re)):0; }
+    case 'metm32':{ const b=1.5,sb=Math.sqrt(b),b1=0.5,Lv=(-4*b*Math.pow(d1,3)+3*d2*d2/d1)*t+d1*x+d2*y,cv=1/Math.tan(sb*Lv); return isFinite(cv)?b1*cv/sb:0; }
+    case 'rational':{ const sd1=Math.sqrt(Math.abs(d1)),dn=3*d3*t+3*d1*x-Math.sqrt(3)*sd1*Math.sqrt(Math.abs(d3))*y; return Math.abs(dn)<0.05?0:-3*g0/dn; }
+    default: return 0;
+  }
+}
+
+// ── CHART HELPERS ──
+const SDEFS = {
+  responsive:true, maintainAspectRatio:false, animation:{duration:180},
+  plugins:{legend:{display:false}},
+  scales:{
+    x:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#6b6860',font:{family:'JetBrains Mono',size:9},maxTicksLimit:8}},
+    y:{grid:{color:'rgba(255,255,255,0.04)'},ticks:{color:'#6b6860',font:{family:'JetBrains Mono',size:9},maxTicksLimit:6}}
+  }
+};
+function sMkChart(id,type,data,opts){
+  if(SC[id]){SC[id].destroy();}
+  const ctx=document.getElementById(id); if(!ctx)return;
+  SC[id]=new Chart(ctx,{type,data,options:{...SDEFS,...opts}}); return SC[id];
+}
+
+// ── METHOD LABEL ──
+function sLabel(m){ return {erscm1:'ERSCM D1',erscm3:'ERSCM D3',metm12:'METM 1.2',metm22:'METM 2.2',metm32:'METM 3.2',rational:'Rasyonel'}[m]||m; }
+
+// ── WAVE TAB ──
+function sBuildWave(){
+  const xs=Array.from({length:SN},(_,i)=>-10+i*(20/(SN-1)));
+  const wd=xs.map(x=>{const v=sSolve(SP.method,x,SP.t);return isFinite(v)?Math.max(-25,Math.min(25,v)):null;});
+  sMkChart('sc-wave','line',{
+    labels:xs.map(v=>v.toFixed(1)),
+    datasets:[{data:wd,borderColor:'#e8c06a',borderWidth:2,pointRadius:0,tension:0.3,fill:true,backgroundColor:'rgba(232,192,106,0.04)'}]
+  },{});
+  const tVals=[-4,-2,0,2,4];
+  const cols=['rgba(91,155,213,0.5)','rgba(78,205,196,0.6)','#e8c06a','rgba(107,203,119,0.6)','rgba(224,92,92,0.5)'];
+  sMkChart('sc-multi','line',{
+    labels:xs.map(v=>v.toFixed(1)),
+    datasets:tVals.map((tv,i)=>({label:`t=${tv}`,data:xs.map(x=>{const v=sSolve(SP.method,x,tv);return isFinite(v)?Math.max(-25,Math.min(25,v)):null;}),borderColor:cols[i],borderWidth:i===2?2:1.5,pointRadius:0,tension:0.3}))
+  },{plugins:{legend:{display:true,labels:{color:'#6b6860',font:{family:'JetBrains Mono',size:9},boxWidth:12,padding:10}}}});
+  document.getElementById('sct-multi').textContent=`t ∈ {${tVals.join(', ')}}`;
+  document.getElementById('sct-method').textContent=sLabel(SP.method);
+}
+
+// ── TIME TAB ──
+function sBuildTime(){
+  const ts=Array.from({length:SN},(_,i)=>-8+i*(16/(SN-1)));
+  sMkChart('sc-time','line',{
+    labels:ts.map(v=>v.toFixed(1)),
+    datasets:[{data:ts.map(t=>{const v=sSolve(SP.method,0,t);return isFinite(v)?Math.max(-25,Math.min(25,v)):null;}),borderColor:'#4ecdc4',borderWidth:2,pointRadius:0,tension:0.3,fill:true,backgroundColor:'rgba(78,205,196,0.04)'}]
+  },{});
+  const xs60=Array.from({length:60},(_,i)=>-6+i*(12/59));
+  sMkChart('sc-amptime','line',{
+    labels:ts.map(v=>v.toFixed(1)),
+    datasets:[{data:ts.map(t=>Math.min(25,Math.max(...xs60.map(x=>{const v=sSolve(SP.method,x,t);return isFinite(v)?Math.abs(v):0;})))),borderColor:'#e05c5c',borderWidth:1.5,pointRadius:0,tension:0.3,fill:true,backgroundColor:'rgba(224,92,92,0.05)'}]
+  },{});
+}
+
+// ── PHASE TAB ──
+function sBuildPhase(){
+  const xs=Array.from({length:300},(_,i)=>-8+i*(16/299));
+  const dx=xs[1]-xs[0];
+  const pts=[];
+  for(let i=1;i<xs.length-1;i++){
+    const u=sSolve(SP.method,xs[i],SP.t);
+    const up=(sSolve(SP.method,xs[i+1],SP.t)-sSolve(SP.method,xs[i-1],SP.t))/(2*dx);
+    if(isFinite(u)&&isFinite(up)&&Math.abs(u)<20&&Math.abs(up)<20) pts.push({x:parseFloat(u.toFixed(3)),y:parseFloat(up.toFixed(3))});
+  }
+  sMkChart('sc-phase','scatter',{datasets:[{data:pts,borderColor:'rgba(176,141,232,0.8)',backgroundColor:'rgba(176,141,232,0.2)',pointRadius:2}]},{
+    scales:{
+      x:{...SDEFS.scales.x,title:{display:true,text:"u(x)",color:'#6b6860',font:{family:'JetBrains Mono',size:9}}},
+      y:{...SDEFS.scales.y,title:{display:true,text:"u'(x)",color:'#6b6860',font:{family:'JetBrains Mono',size:9}}}
+    }
+  });
+}
+
+// ── ANALYSIS TAB ──
+const SFORMULAS={
+  erscm1:'<span class="fv">u_S1</span> <span class="fo">= γ₀·cosh(Ξ)·sinh(Ξ) / γ₁·[sinh²(Ξ)+1]</span>\nΞ <span class="fo">= (12β²γ₀²t)/(γ₁²δ₁μ) − ½δ₁³μ³t + δ₁μx + 2βγ₀y/γ₁</span>',
+  erscm3:'<span class="fv">u_S3</span> <span class="fo">= (γ₀/γ₁)·coth(Θ)</span>\nΘ <span class="fo">= (3β²γ₀²t)/(γ₁²δ₁μ) − 2δ₁³μ³t + δ₁μx + βγ₀y/γ₁</span>',
+  metm12:'<span class="fv">u_12</span> <span class="fo">= −a₁√b·tan(√b·L)·[cot(√b·L)+i]²</span>\nL <span class="fo">= δ₁x − (√δ₁·√(16bδ₁³+δ₃)/√3)y + δ₃t</span>',
+  metm22:'<span class="fv">u_22</span> <span class="fo">= a₁√b·[tan(√b·L) − cot(√b·L) + 2i]</span>\nL <span class="fo">= −½αa₁x + δ₂y + (2α³a₁³b − 6δ₂²/αa₁)t</span>',
+  metm32:'<span class="fv">u_32</span> <span class="fo">= b₁·[cot(√b·L) + i] / √b</span>\nL <span class="fo">= (−4bδ₁³ + 3δ₂²/δ₁)t + δ₁x + δ₂y</span>',
+  rational:'<span class="fv">u_rat</span> <span class="fo">= −3γ₀ / (3δ₃t + 3δ₁x − √3·√δ₁·√δ₃·y)</span>'
+};
+function sBuildAnalysis(){
+  document.getElementById('sim-formula-text').innerHTML=(SFORMULAS[SP.method]||'—').split('\n').join('<br>');
+  const betas=Array.from({length:20},(_,i)=>-1+i*(2/19));
+  const savedB=SP.beta;
+  const bAmps=betas.map(b=>{SP.beta=b;const vs=Array.from({length:40},(_,i)=>sSolve(SP.method,-5+i*0.25,SP.t));return Math.min(20,Math.max(...vs.filter(isFinite).map(Math.abs)));});
+  SP.beta=savedB;
+  sMkChart('sc-beta','line',{labels:betas.map(v=>v.toFixed(2)),datasets:[{data:bAmps,borderColor:'#e8c06a',borderWidth:2,pointRadius:0,tension:0.2,fill:true,backgroundColor:'rgba(232,192,106,0.07)'}]},{});
+  const mus=Array.from({length:20},(_,i)=>0.2+i*(2.8/19));
+  const savedM=SP.mu;
+  const mAmps=mus.map(mu=>{SP.mu=mu;const vs=Array.from({length:40},(_,i)=>sSolve(SP.method,-5+i*0.25,SP.t));return Math.min(20,Math.max(...vs.filter(isFinite).map(Math.abs)));});
+  SP.mu=savedM;
+  sMkChart('sc-mu','line',{labels:mus.map(v=>v.toFixed(2)),datasets:[{data:mAmps,borderColor:'#4ecdc4',borderWidth:2,pointRadius:0,tension:0.2,fill:true,backgroundColor:'rgba(78,205,196,0.07)'}]},{});
+  const d2=sD2(),d3=sD3(),ws=Math.abs(d3/SP.d1),lm=(2*Math.PI)/Math.abs(SP.mu*SP.d1),dp=Math.abs(SP.beta)*SP.mu*SP.mu;
+  document.getElementById('sim-ptbody').innerHTML=[
+    ['δ₂',d2.toFixed(4),'Enine hız bileşeni','wave'],
+    ['δ₃',d3.toFixed(4),'Zaman ölçeği','wave'],
+    ['c=δ₃/δ₁',ws.toFixed(4),'Dalga fazı hızı','soliton'],
+    ['λ=2π/μδ₁',lm.toFixed(4),'Dalga boyu','wave'],
+    ['α·β',(SP.alpha*SP.beta).toFixed(4),'Nonlineer-dispersif denge','rational'],
+    ['μ·δ₁',(SP.mu*SP.d1).toFixed(4),'Efektif dalga sayısı','wave']
+  ].map(([p,v,d,t])=>`<tr><td class="tdm">${p}</td><td class="tdm">${v}</td><td>${d}</td><td><span class="tdb ${t}">${t}</span></td></tr>`).join('');
+}
+
+// ── METRICS ──
+function sMetrics(){
+  const xs=Array.from({length:100},(_,i)=>-8+i*0.16);
+  const vals=xs.map(x=>sSolve(SP.method,x,SP.t)).filter(isFinite);
+  const ma=vals.length?Math.max(...vals.map(Math.abs)):0;
+  const d3=sD3();
+  document.getElementById('sm-amp').textContent=ma.toFixed(2);
+  document.getElementById('sm-speed').textContent=Math.abs(d3/SP.d1).toFixed(2);
+  document.getElementById('sm-lambda').textContent=((2*Math.PI)/Math.abs(SP.mu*SP.d1)).toFixed(2);
+  document.getElementById('sm-disp').textContent=(Math.abs(SP.beta)*SP.mu*SP.mu).toFixed(3);
+}
+
+// ── RUN ──
+window.simRun = function(){
+  SP.method = document.getElementById('sim-method').value;
+  const dot=document.getElementById('sim-sdot');
+  dot.classList.add('computing');
+  document.getElementById('sim-stext').textContent='Hesaplanıyor...';
+  setTimeout(()=>{
+    sBuildWave(); sBuildTime(); sBuildPhase(); sBuildAnalysis();
+    simUpdatePhys(); sMetrics();
+    dot.classList.remove('computing');
+    document.getElementById('sim-stext').textContent='Hazır';
+    document.getElementById('sim-smethod').textContent=sLabel(SP.method);
+  },20);
+};
+
+// ── METHOD UPDATE ──
+window.simUpdateMethod = function(){
+  SP.method=document.getElementById('sim-method').value;
+  document.getElementById('sim-smethod').textContent=sLabel(SP.method);
+};
+
+// ── TAB NAV ──
+window.simShowTab = function(id,btn){
+  document.querySelectorAll('#sim-root .sim-tabpanel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#sim-root .sim-tabbtn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('stab-'+id).classList.add('active');
+  btn.classList.add('active');
+};
+
+// ── INIT ──
+simUpdatePhys();
+simRun();
+})();
+</script>
+
+</section>
+
+</main>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────
+const params = { beta:0.33, mu:1.2, d1:1.5, g0:-1.5, g1:2.25, y0:0.67, t0:0 };
+let chart2d = null, chartTime = null, chartBeta = null, chartCompare = null;
+
+// ─── NAV ─────────────────────────────────────────────────
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('#main-nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if (id === 'visualizer') initCharts();
+  if (id === 'compare') initCompareChart();
+}
+
+function showMethod(id, btn) {
+  document.querySelectorAll('.method-panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('#method-toggle .toggle-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('method-' + id).style.display = 'block';
+  btn.classList.add('active');
+}
+
+function showStep(method, n, btn) {
+  document.querySelectorAll('#' + method + '-step-' + n).forEach(e => {});
+  const panels = document.querySelectorAll('[id^="' + method + '-step-"]');
+  panels.forEach(p => p.classList.remove('active'));
+  const dots = document.querySelectorAll('#' + method + '-nav .step-dot');
+  dots.forEach(d => d.classList.remove('active'));
+  document.getElementById(method + '-step-' + n).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── SOLUTION SELECT ─────────────────────────────────────
+const solDetails = {
+  erscm1: {
+    title: 'u<sub>S1</sub> — ERSCM Durum 1',
+    eq: 'u_S1 = γ₀ cosh(Ξ) / γ₁[sinh(Ξ) + i]\nΞ = (12β²γ₀²t)/(γ₁²δ₁μ) − (1/2)δ₁³μ³t + δ₁μx + (2βγ₀y)/γ₁',
+    note: 'Kompleks soliton. γ₂ = iγ₁ şartıyla elde edilir. Grafik parametreleri: y=2/3, μ=6/5, β=1/3, γ₀=−3/2, γ₁=9/4, δ₁=3/2.'
+  },
+  erscm2: {
+    title: 'u<sub>S2</sub> — ERSCM Durum 2',
+    eq: 'u_S2 = γ₀ cosh(Λ) / γ₂[1 + i·sinh(Λ)]\nΛ = −(1/2)δ₁³μ³t + (3δ₂²μt)/δ₁ + δ₁μx + δ₂μy',
+    note: 'γ₁ = iγ₂ parametresiyle elde edilen farklı kompleks soliton yapısı.'
+  },
+  erscm3: {
+    title: 'u<sub>S3</sub> — ERSCM Durum 3',
+    eq: 'u_S3 = (γ₀/γ₁) coth(Θ)\nΘ = (3β²γ₀²t)/(γ₁²δ₁μ) − 2δ₁³μ³t + δ₁μx + (βγ₀y)/γ₁',
+    note: 'γ₂ = 0 durumunda reel değerli coth solitonu elde edilir. Açık-soliton profili.'
+  },
+  metm11: {
+    title: 'u<sub>11</sub> — METM Durum 1.1 (b<0)',
+    eq: 'u_11 = −a₁√b · tan(√b·L) · [cot(√b·L) + i]²\nL = −√(δ₁)√(16bδ₁³+δ₃)/√3 · y + δ₃t + δ₁x',
+    note: 'b<0 ve tanh Riccati çözümü kullanılarak elde edilen tan/cot içeren periodik yapı.'
+  },
+  metm12: {
+    title: 'u<sub>12</sub> — METM Durum 1.2 (b>0)',
+    eq: 'u_12 = −a₁√b · tan(√b·L) · [cot(√b·L) + i]²\nL = δ₁x − (√δ₁√(16bδ₁³+δ₃)/√3)y + δ₃t',
+    note: 'b>0 durumu. Grafik: a₁=−3/2, α=1/5, δ₁=−2/3, δ₃=2/3, b=1/16, y=3/5.'
+  },
+  metm13: {
+    title: 'u<sub>13</sub> — METM Durum 1.3 (b=0)',
+    eq: 'u_13 = −3a₁ / (3δ₃t + 3δ₁x − √3·√δ₁·√δ₃·y)',
+    note: 'b=0 rasyonel çözüm. Dalga yapısı x, y, t değişkenlerinde rasyonel fonksiyondur.'
+  },
+  metm22: {
+    title: 'u<sub>22</sub> — METM Durum 2.2 (b>0)',
+    eq: 'u_22 = a₁√b · [tan(√b·L) − cot(√b·L) + 2i]\nL = −(1/2)αa₁x + δ₂y + (2α³a₁³b − 6δ₂²/(αa₁))t',
+    note: 'Farklı katsayı seti (Durum 2). Grafik: a₁=5/2, α=5/3, δ₁=−2/3, b=1/50, y=3/5.'
+  },
+  metm32: {
+    title: 'u<sub>32</sub> — METM Durum 3.2 (b>0)',
+    eq: 'u_32 = b₁ · [cot(√b·(−4bδ₁³t + 3δ₂²t/δ₁ + δ₁x + δ₂y)) + i] / √b',
+    note: 'a₁=0 durumu; yalnızca b₁ terimi hayatta kalır. Grafik: b₁=1/2, δ₁=−2/3, δ₂=2/3, b=3/2.'
+  }
+};
+
+function selectSol(id, el) {
+  document.querySelectorAll('.sol-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const d = solDetails[id];
+  document.querySelector('#sol-detail .card-title').innerHTML = 'Seçili Çözüm: ' + d.title;
+  document.getElementById('sol-detail-content').innerHTML = `
+    <div class="eq-box"><span class="eq-label">Çözüm Formülü</span>${d.eq.split('\n').join('<br>')}</div>
+    <div class="info-row" style="margin-top:1rem">${d.note}</div>`;
+}
+
+// ─── PARAM UPDATE ─────────────────────────────────────────
+function updateParam(key, el) {
+  params[key] = parseFloat(el.value);
+  const disp = key === 'beta' ? 'beta' : key === 'mu' ? 'mu' : key === 'y0' ? 'y0' : key === 't0' ? 't0' : key;
+  document.getElementById('v-' + disp).textContent = params[key].toFixed(2);
+  updatePlot();
+}
+
+// ─── SOLUTION FUNCTIONS ───────────────────────────────────
+function computeSolution(type, x, t, p) {
+  const { beta, mu, d1, g0, g1, y0 } = p;
+  const d2 = 2 * beta * g0 / (g1 * mu);
+  const d3 = (24 * beta * beta * g0 * g0 - g1 * g1 * Math.pow(d1, 4) * Math.pow(mu, 4)) / (2 * g1 * g1 * d1 * mu * mu);
+  const Xi = (12 * beta * beta * g0 * g0 * t) / (g1 * g1 * d1 * mu) - 0.5 * Math.pow(d1, 3) * Math.pow(mu, 3) * t + d1 * mu * x + 2 * beta * g0 * y0 / g1;
+
+  switch (type) {
+    case 'soliton_real': {
+      const denom = Math.cosh(Xi) * Math.cosh(Xi) + 1;
+      return g0 * Math.cosh(Xi) * Math.sinh(Xi) / (g1 * denom);
+    }
+    case 'soliton_imag': {
+      const denom = Math.cosh(Xi) * Math.cosh(Xi) + 1;
+      return g0 * Math.cosh(Xi) / (g1 * denom);
+    }
+    case 'coth_sol': {
+      const Theta = (3 * beta * beta * g0 * g0 * t) / (g1 * g1 * d1 * mu) - 2 * Math.pow(d1, 3) * Math.pow(mu, 3) * t + d1 * mu * x + beta * g0 * y0 / g1;
+      const ct = Math.tanh(Theta);
+      if (Math.abs(ct) < 1e-10) return 0;
+      return (g0 / g1) / ct;
+    }
+    case 'trig_sol': {
+      const b = 1 / 16;
+      const sb = Math.sqrt(b);
+      const sd1 = Math.sqrt(Math.abs(d1));
+      const d3b = 2 / 3;
+      const L = d1 * x - sd1 * Math.sqrt(16 * b * Math.pow(d1, 3) + d3b) / Math.sqrt(3) * y0 + d3b * t;
+      const val = sb * Math.tan(sb * L);
+      if (!isFinite(val)) return 0;
+      return -(-1.5) * val;
+    }
+    case 'rational': {
+      const d3r = 2 / 3;
+      const sd1 = Math.sqrt(Math.abs(d1));
+      const denom = 3 * d3r * t + 3 * d1 * x - Math.sqrt(3) * sd1 * Math.sqrt(d3r) * y0;
+      if (Math.abs(denom) < 0.01) return 0;
+      return -3 * (-1.5) / denom;
+    }
+    default: return 0;
+  }
+}
+
+// ─── CHARTS ──────────────────────────────────────────────
+function initCharts() {
+  if (chart2d) { updatePlot(); return; }
+
+  const xs = Array.from({ length: 120 }, (_, i) => -10 + i * (20 / 119));
+  const ts = Array.from({ length: 80 }, (_, i) => -5 + i * (10 / 79));
+
+  const colors = {
+    line: '#c9a96e',
+    line2: '#7ecfb3',
+    grid: 'rgba(255,255,255,0.05)',
+    tick: '#8a8880',
+  };
+
+  const baseOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: colors.grid }, ticks: { color: colors.tick, maxTicksLimit: 8, font: { family: 'IBM Plex Mono', size: 10 } } },
+      y: { grid: { color: colors.grid }, ticks: { color: colors.tick, maxTicksLimit: 6, font: { family: 'IBM Plex Mono', size: 10 } } }
+    },
+    animation: { duration: 200 }
+  };
+
+  // 2D profile
+  chart2d = new Chart(document.getElementById('chart-2d'), {
+    type: 'line',
+    data: {
+      labels: xs.map(v => v.toFixed(1)),
+      datasets: [{ label: 'u(x)', data: xs.map(x => computeSolution('soliton_real', x, 0, params)), borderColor: colors.line, borderWidth: 2, pointRadius: 0, tension: 0.3 }]
+    },
+    options: { ...baseOpts }
+  });
+
+  // Time evolution
+  chartTime = new Chart(document.getElementById('chart-time'), {
+    type: 'line',
+    data: {
+      labels: ts.map(v => v.toFixed(2)),
+      datasets: [{ label: 'u(0,t)', data: ts.map(t => computeSolution('soliton_real', 0, t, params)), borderColor: colors.line2, borderWidth: 2, pointRadius: 0, tension: 0.3 }]
+    },
+    options: { ...baseOpts }
+  });
+
+  // Beta sweep
+  const betas = [-0.8, -0.5, -0.3, -0.1, 0.1, 0.3, 0.5, 0.8];
+  const maxAmps = betas.map(b => {
+    const pp = { ...params, beta: b };
+    const vals = xs.map(x => Math.abs(computeSolution('soliton_real', x, 0, pp)));
+    return Math.max(...vals);
+  });
+
+  chartBeta = new Chart(document.getElementById('chart-beta'), {
+    type: 'bar',
+    data: {
+      labels: betas.map(b => 'β=' + b),
+      datasets: [{ label: 'Maks. Genlik', data: maxAmps, backgroundColor: 'rgba(201,169,110,0.5)', borderColor: '#c9a96e', borderWidth: 1 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: colors.grid }, ticks: { color: colors.tick, font: { family: 'IBM Plex Mono', size: 10 } } },
+        y: { grid: { color: colors.grid }, ticks: { color: colors.tick, font: { family: 'IBM Plex Mono', size: 10 } } }
+      }
+    }
+  });
+}
+
+function initCompareChart() {
+  if (chartCompare) return;
+  chartCompare = new Chart(document.getElementById('chart-compare'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Hiperbolik (ERSCM)', 'Trigonometrik (METM)', 'Rasyonel (METM)', 'Kompleks Hiperbolik'],
+      datasets: [{
+        data: [3, 6, 2, 3],
+        backgroundColor: ['#c9a96e88', '#7ecfb388', '#b08de888', '#6ba8e088'],
+        borderColor: ['#c9a96e', '#7ecfb3', '#b08de8', '#6ba8e0'],
+        borderWidth: 1.5,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'right',
+          labels: { color: '#8a8880', font: { family: 'IBM Plex Mono', size: 11 }, padding: 16, boxWidth: 14 }
+        }
+      }
+    }
+  });
+}
+
+function updatePlot() {
+  if (!chart2d) return;
+  const type = document.getElementById('vis-solution').value;
+  const xs = Array.from({ length: 120 }, (_, i) => -10 + i * (20 / 119));
+  const ts = Array.from({ length: 80 }, (_, i) => -5 + i * (10 / 79));
+
+  chart2d.data.datasets[0].data = xs.map(x => {
+    const v = computeSolution(type, x, params.t0, params);
+    return isFinite(v) ? Math.max(-20, Math.min(20, v)) : null;
+  });
+  chart2d.update();
+
+  chartTime.data.datasets[0].data = ts.map(t => {
+    const v = computeSolution(type, 0, t, params);
+    return isFinite(v) ? Math.max(-20, Math.min(20, v)) : null;
+  });
+  chartTime.update();
+}
+</script>
+</body>
+</html>
